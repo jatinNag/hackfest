@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/DataModel/Permission.dart';
 import 'package:flutter_app/constants/constants.dart';
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -14,16 +15,14 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  List<Widget> permissionsWidgetList = List.empty(growable: true);
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+//    permissionsWidgetList =  getPermissionStatus();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -35,40 +34,52 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
 
-        child: Column(
+        child: FutureBuilder(
+          future: getPermissionStatus(),
+
+          builder: (BuildContext context,AsyncSnapshot<List<Widget>> snapshot){
+            if(snapshot.hasData){
+                return         Column(
 
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
+          children: snapshot.data
+//              <Widget>[
+//            Text(
+//              'You have pushed the button this many times:',
+//            ),
+//            Text(
+//              '$_counter',
+//              style: Theme.of(context).textTheme.headline4,
+//            ),
+//          ],
+        );
+            }else{
+              return Text("requesting permissions");
+            }
+        },
+        )
+
+
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+
     );
   }
-  List<Widget> getPermissionStatus(){
-    List<Widget> permissionWidget;
-    List<bool> permissionStatus;
+  Future<List<Widget>> getPermissionStatus()async{
+    List<Widget> permissionWidget  = List.empty(growable: true);
+    List<bool> permissionStatus = await Permissions().getPermission();
+    print(Constants.permissionsName.length);
     for(int i = 0;i<Constants.permissionsName.length;i++){
+      print(permissionStatus[i]);
       Widget permission = Row(
         children: [
-          permissionStatus[i]?Image.asset("x.png"):Image.asset("check.png"),
+          permissionStatus[i]?Image.asset("assets/check.jpg"):Image.asset("assets/x.jpg"),
           Text(Constants.permissionsName[i]),
         ],
       );
       permissionWidget.add(permission);
     }
     return permissionWidget;
+
   }
 
 
